@@ -19,9 +19,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes \
+            fonts-cmu \
             fonts-dejavu-core \
-            fonts-fira-sans \
-            fonts-newcomputer-modern \
             fonts-noto-core \
             fonts-paratype
 

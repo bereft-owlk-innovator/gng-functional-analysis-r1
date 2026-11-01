@@ -1,0 +1,51 @@
+name: Compile Typst documents
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install presentation fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            fonts-dejavu-core \
+            fonts-fira-sans \
+            fonts-newcomputer-modern \
+            fonts-noto-core \
+            fonts-paratype
+
+      - name: Set up Typst
+        uses: typst-community/setup-typst@v4
+
+      - name: Compile all Typst files
+        shell: bash
+        run: |
+          if ! find . -type f -name '*.typ' -not -path './.git/*' -print -quit | grep -q .; then
+            echo "No Typst source files found." >&2
+            exit 1
+          fi
+
+          while IFS= read -r -d '' source; do
+            relative_path="${source#./}"
+            output_path="dist/${relative_path%.typ}.pdf"
+            mkdir -p "$(dirname "$output_path")"
+            typst compile "$source" "$output_path"
+          done < <(find . -type f -name '*.typ' -not -path './.git/*' -print0)
+
+      - name: Upload compiled PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: typst-pdfs
+          path: dist/
+          if-no-files-found: error

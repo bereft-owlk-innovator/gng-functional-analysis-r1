@@ -3,3 +3,4 @@
 .DS_Store
 .edist
 *.pdf
+/dist/
